@@ -6,9 +6,9 @@ import sys
 
 def main():
     parser = argparse.ArgumentParser(description="Generator zapytań DNS Amplification z IP Spoofingiem")
-    parser.add_argument("--victim", required=True, help="Adres IP ofiary (fałszywy adres źródłowy - Source IP)")
-    parser.add_argument("--dns", required=True, help="Adres IP serwera DNS / reflektora (Destination IP)")
-    parser.add_argument("--domain", default="example.com", help="Domena zapytania DNS (celowo wyzwalająca dużą odpowiedź)")
+    parser.add_argument("--victim", default="10.0.5.1", help="Adres IP ofiary (fałszywy adres źródłowy - Source IP)")
+    parser.add_argument("--dns", default="10.0.2.1", help="Adres IP serwera DNS / reflektora (Destination IP)")
+    parser.add_argument("--domain", default="psir.proj", help="Domena zapytania DNS (celowo wyzwalająca dużą odpowiedź)")
     parser.add_argument("--count", type=int, default=10, help="Liczba pakietów do wysłania")
     
     args = parser.parse_args()

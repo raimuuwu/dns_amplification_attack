@@ -1,9 +1,22 @@
+import os, sys, time
 from mininet.topo import Topo
 from mininet.net import Mininet
 from mininet.node import Node, OVSBridge
 from mininet.log import setLogLevel, info
 from mininet.cli import CLI
 from mininet.link import TCLink
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SCRIPT   = os.path.join(BASE_DIR, "server_dns.py")
+VENV_PYTHON = os.path.join(BASE_DIR, "pcyb", "bin", "python")
+
+for path, label in [(VENV_PYTHON, "venv Python"), (SCRIPT, "server_dns.py")]:
+    if not os.path.exists(path):
+        sys.exit(f"{label} not found at {path}")
+
+if os.geteuid() != 0:
+    sys.exit(f"Run with sudo:  sudo {VENV_PYTHON} {os.path.abspath(__file__)}")
+
 
 class LinuxRouter(Node):
     """Host w Mininecie udający router (włącza IP forwarding)"""
@@ -74,6 +87,13 @@ def run():
     net = Mininet(topo=topo, link=TCLink, controller=None, switch=OVSBridge)
     net.start()
 
+    
+    info('\n*** Uruchamianie serwerów DNS w tle...\n')
+    for name in ["server0", "server1", "server2"]:
+        cmd_str = f"{VENV_PYTHON} {SCRIPT} > /tmp/server_dns_{name}.log 2>&1 &"
+        net.get(name).cmd(cmd_str)
+        info(f" - {name} uruchomiony\n")
+
 
     info('\n*** Konfiguracja routingu statycznego...\n')
     r9 = net.get('r9')
@@ -89,7 +109,16 @@ def run():
     info('*** Test Atakujący -> Ofiara\n')
     net.ping([net.get('attacker'), net.get('victim_pc0')])
 
-    info('\n*** Gotowe!\n')
+    info('*** Test Atakujący -> Serwer 1\n')
+    net.ping([net.get('attacker'), net.get('server0')])
+
+    info('*** Test Atakujący -> serwer 2\n')
+    net.ping([net.get('attacker'), net.get('server1')])
+
+    info('*** Test Atakujący -> Serwer 3\n')
+    net.ping([net.get('attacker'), net.get('server2')])
+
+    info('\n*** Gotowe! Serwery DNS działają w tle.\n')
     CLI(net)
     net.stop()
 

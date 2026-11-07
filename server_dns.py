@@ -1,17 +1,18 @@
-
 from socketserver import UDPServer, BaseRequestHandler
 from dnslib import DNSRecord, RR, A, TXT, QTYPE, RCODE
 
 # Konfiguracja serwera
-HOST = "10.0.2.1"
+HOST = "0.0.0.0"
 PORT = 53
 
+"""
 # Dozwolone rzeczywiste adresy klientów
 ALLOWED_CLIENTS = {
     "10.0.1.1",  # attacker
     "10.0.1.2",  # legit_pc2
+    "10.0.5.1",  # victim_pc0 
 }
-
+"""
 
 class DNSHandler(BaseRequestHandler):
 
@@ -22,6 +23,7 @@ class DNSHandler(BaseRequestHandler):
         try:
             request = DNSRecord.parse(data)
 
+            """
             # Kontrola adresu nadawcy
             if client_ip not in ALLOWED_CLIENTS:
                 print(f"Odrzucono zapytanie z: {client_ip}")
@@ -29,6 +31,7 @@ class DNSHandler(BaseRequestHandler):
                 reply.header.rcode = RCODE.REFUSED
                 sock.sendto(reply.pack(), self.client_address)
                 return
+            """
 
             reply = request.reply()
             reply.header.aa = 1
@@ -45,12 +48,12 @@ class DNSHandler(BaseRequestHandler):
                     f"Rozmiar: {len(data)} B"
                 )
 
-                if name == "lab.test" and record_type == "A":
+                if name == "psir.proj" and record_type == "TXT":
                     reply.add_answer(
                         RR(
-                            "lab.test",
-                            QTYPE.A,
-                            rdata=A("192.0.2.10"),
+                            "psir.proj",
+                            QTYPE.TXT,
+                            rdata=TXT("bardzo dlugi rekord TXT, ktory sluzy do wywolania amplifikacji w symulowanym ataku DDoS!"),
                             ttl=60
                         )
                     )
