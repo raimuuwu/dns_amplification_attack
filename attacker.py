@@ -17,7 +17,6 @@ def main():
     
     args = parser.parse_args()
 
-    # Parsowanie list adresów IP (oddzielonych przecinkami)
     victims = [v.strip() for v in args.victims.split(",")]
     dns_servers = [d.strip() for d in args.dns_servers.split(",")]
     domain = args.domain
@@ -37,7 +36,7 @@ def main():
         sent_packets = 0
         
         for i in range(count):
-            # Losowanie ofiary oraz serwera DNS z dostępnych pul (jeśli jest ich więcej)
+            # Losowanie ofiary oraz serwera DNS
             current_victim = random.choice(victims)
             current_dns = random.choice(dns_servers)
 
