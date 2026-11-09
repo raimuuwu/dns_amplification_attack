@@ -49,11 +49,13 @@ class DNSHandler(BaseRequestHandler):
                 )
 
                 if name == "psir.proj" and record_type == "TXT":
+                    # Dzielimy 1000 bajtów na 4 kawałki po 250 bajtów
+                    chunks = ["A" * 250, "B" * 250, "C" * 250, "D" * 250]
                     reply.add_answer(
                         RR(
                             "psir.proj",
                             QTYPE.TXT,
-                            rdata=TXT("bardzo dlugi rekord TXT, ktory sluzy do wywolania amplifikacji w symulowanym ataku DDoS!"),
+                            rdata=TXT(chunks), # Przekazujemy listę!
                             ttl=60
                         )
                     )

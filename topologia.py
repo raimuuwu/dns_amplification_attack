@@ -41,9 +41,9 @@ class OstatecznaTopo(Topo):
         self.addLink(switch1, r9, intfName2='r9-eth2', params2={'ip': '10.0.1.254/24'})
         
         attacker = self.addHost('attacker', ip='10.0.1.1/24', defaultRoute='via 10.0.1.254')
-        legit_pc2 = self.addHost('legit_pc2', ip='10.0.1.2/24', defaultRoute='via 10.0.1.254')
+        pc2 = self.addHost('pc2', ip='10.0.1.2/24', defaultRoute='via 10.0.1.254')
         self.addLink(attacker, switch1)
-        self.addLink(legit_pc2, switch1)
+        self.addLink(pc2, switch1)
 
 
 
@@ -73,12 +73,12 @@ class OstatecznaTopo(Topo):
         
         self.addLink(switch0, r7, intfName2='r7-eth4', params2={'ip': '10.0.5.254/24'}, bw=10)
         
-        victim_pc0 = self.addHost('victim_pc0', ip='10.0.5.1/24', defaultRoute='via 10.0.5.254')
-        legit_pc4 = self.addHost('legit_pc4', ip='10.0.5.2/24', defaultRoute='via 10.0.5.254')
+        victim = self.addHost('victim', ip='10.0.5.1/24', defaultRoute='via 10.0.5.254')
+        pc4 = self.addHost('pc4', ip='10.0.5.2/24', defaultRoute='via 10.0.5.254')
         server2 = self.addHost('server2', ip='10.0.5.3/24', defaultRoute='via 10.0.5.254')
         
-        self.addLink(victim_pc0, switch0)
-        self.addLink(legit_pc4, switch0)
+        self.addLink(victim, switch0)
+        self.addLink(pc4, switch0)
         self.addLink(server2, switch0)
 
 
@@ -107,7 +107,7 @@ def run():
     r7.cmd('ip route add 10.0.2.0/24 via 10.0.100.1')
 
     info('*** Test Atakujący -> Ofiara\n')
-    net.ping([net.get('attacker'), net.get('victim_pc0')])
+    net.ping([net.get('attacker'), net.get('victim')])
 
     info('*** Test Atakujący -> Serwer 1\n')
     net.ping([net.get('attacker'), net.get('server0')])
